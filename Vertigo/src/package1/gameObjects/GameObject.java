@@ -8,7 +8,9 @@ public interface GameObject {
 	
 	void setPosition(int [] newPosition);
 	
-	BufferedImage getVisual(int current);
+	BufferedImage getVisual(int current, int count);
+	
+	BufferedImage getVisualSet(int current);
 	
 	int [] getHitbox();
 	
