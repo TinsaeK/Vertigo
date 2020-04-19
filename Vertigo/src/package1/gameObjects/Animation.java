@@ -1,4 +1,4 @@
-package gameObjects
+package gameObjects;
 
 import java.awt.image.BufferedImage;
 
@@ -51,13 +51,5 @@ public class Animation {
 	public boolean hasPlayedOnce() { 
 		return playedOnce; 
 		}
-	
-}
-
-
-
-	
-	
-	
 	
 }

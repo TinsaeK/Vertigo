@@ -20,4 +20,5 @@ public interface GameObject {
 	
 	void setSize(int [] size);
 	
+	void update();
 }
