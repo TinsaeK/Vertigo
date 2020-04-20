@@ -11,6 +11,7 @@ public class GameStateManager {
         gameStates = new ArrayList<GameState>();
         currentState=MENUSTATE;
         gameStates.add(new MenuState(this));
+        gameStates.add(new Level1State(this));
     }
     public void setState(int state){
         currentState = state;

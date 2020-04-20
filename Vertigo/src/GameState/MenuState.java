@@ -24,8 +24,8 @@ public class MenuState extends GameState {
         try {
             back = new Background("/Resources/menu.gif",1);
             back.setVec(-0.1, 0);
-            tc=new Color(128, 70, 123);
-            tf= new Font("Century Gothic", Font.PLAIN, 28);
+            tc=new Color(0, 0, 0);
+            tf= new Font("Century Gothic", Font.BOLD, 28);
 
             font= new Font("Arial", Font.PLAIN, 12);
         }
@@ -57,6 +57,7 @@ public class MenuState extends GameState {
     }
     public void select(){
         if(cc==0){
+            stateMan.setState(GameStateManager.LEVEL1STATE);
 
         }
         if(cc==1){
