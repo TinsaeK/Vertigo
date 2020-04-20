@@ -40,6 +40,7 @@ public class Background {
         one += done;
         two += dtwo;
     }
+
     public void draw(Graphics2D g) {
         g.drawImage(image, (int) one, (int) two, null);
         if (one < 0) {
