@@ -1,5 +1,5 @@
 /**
- * 
+ * Graphics need to be sent to Characeter from where the character is declared.
  */
 package gameObjects;
 
@@ -7,29 +7,45 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-
 public class Character implements GameObject {
 	/**
 	 * 
 	 */
+	Graphics g;
 	BufferedImage [] [] visual;
 	int [] position;
 	int [] hitbox;
 	int [] size;
 	int currentState;
+    Animation animation;
+    int moveSpeed = 0;
+    int stopSpeed = 0;
+    int fallSpeed = 0;
+    int jumpSpeed = 0;
+    int stopJumpSpeed = 0;
+    boolean falling = false;
+    boolean jumping = false;
+    boolean movingLeft = false;
+    boolean movingRight = false;
+    int dx = 0;
+    int dy = 0;
 	//possible version: 0 = idle, 1 = walkingA, 2 = walkingB, 3 = runningA, 4 = runningB, 5 = jumping
-	//alt 1: idle = 0, walking = 1 or -1,
+	//alternate 1: idle = 0, walking = 1 or -1,
+    boolean facingRight;
 	private static final int IDLE = 0;
 	private static final int WALKING = 1;
 	private static final int JUMPING = 2;
 	private static final int FALLING = 3;
+	private static final int MAXSPEED = 200;
+	private static final int MAXFALLSPEED = 200;
 
-	public Character() {
+	public Character(Graphics g) {
 		// Constructor for default character
 	   	// load sprites
+		this.g = g;
 		this.position = new int [] {0, 0};
 		this.size = new int [] {30, 30};
-		this.hitbox = new int [] { 5, 5, 20, 20};
+		this.hitbox = new int [] {5, 5, 20, 20};
 		this.currentState = 0;
 		try {
 			this.visual [IDLE] [0] = ImageIO.read(getClass().getResourceAsStream("/Visuals/Character/PlayerspriteIDLE.gif"));
@@ -42,17 +58,17 @@ public class Character implements GameObject {
 			e.printStackTrace();
 		}
 		
-	      animation = new Animation();
-	      currentState = this.currentState;
-	      animation.setFrames(this.getVisualSet(currentState, 0));
-	      animation.setDelay(400);
+		animation = new Animation();
+	    animation.setFrame(this.currentState);
+	    animation.setFrames(this.getVisualSet(currentState));
+	    animation.setDelay(400);
 	}
 
 		
 	@Override
 	public int[] getPosition() {
 		//get method for the position of the character 
-		//to be mesured from the ____(top left or bottom left?)
+		//to be measured from the ____(top left or bottom left?)
 		return position;
 	}
 
@@ -61,30 +77,32 @@ public class Character implements GameObject {
 		// Set method for the character position
 		this.position = newPosition;
 	}
-
+	
 	@Override
-	public BufferedImage getVisual(int currentState, int count) {
-		// Geting one visual based on character state.
-		return visual [currentState] [count];
+	public BufferedImage getVisual(int currentState, int inset) {
+		// Getting one visual based on character state.
+		return visual [currentState] [0];
 	}
+	
 	@Override
-	public BufferedImage getVisualSet(int currentState) {
-		// Geting one visual based on character state.
-		return visual [currentState];
+	public BufferedImage [] getVisualSet(int currentState) {
+		// Getting one visual based on character state.
+		BufferedImage [] set = visual[currentState];
+		return set;
 	}
 
 	@Override
 	public int[] getHitbox() {
-		// get method for the hitbox of the character
-		// 2 ints distance from position start point
-		// 2 ints hit box size, starting from the point given
-		// ex {1, 2, 3, 4} gets a hit box in one up two over that is 3x4 in size
+		// get method for the hit box of the character
+		// 2 integers distance from position start point
+		// 2 integers hit box size, starting from the point given
+		// example {1, 2, 3, 4} gets a hit box in one up two over that is 3x4 in size
 		return hitbox;
 	}
 
 	@Override
 	public void setHitbox(int[] newHitbox) {
-		//set method for the hitbox
+		//set method for the hit box
 		this.hitbox = newHitbox;
 	}
 	
@@ -103,21 +121,72 @@ public class Character implements GameObject {
 	public int getCurrentState()
 	{
 		//gets the state of the character for images (Running, Jumping, Idle, etc) 
-		return this.currentState
+		return this.currentState;
 	}
 	public void setCurrentState(int newState)
 	{
-		//sets the curent state of the Character 
+		//sets the current state of the Character 
 		this.currentState = newState;
 	}
 	
+	   private void getNextPosition() {
+		   	
+		   	// movement
+		      if(movingLeft) {
+		         dx -= moveSpeed;
+		         if(dx < -MAXSPEED) {
+		            dx = -MAXSPEED;
+		         }
+		      }
+		      else if(movingRight) {
+		         dx += moveSpeed;
+		         if(dx > MAXSPEED) {
+		            dx = MAXSPEED;
+		         }
+		      }
+		      else {
+		         if(dx > 0) {
+		            dx -= stopSpeed;
+		            if(dx < 0) {
+		               dx = 0;
+		            }
+		         }
+		         else if(dx < 0) {
+		            dx += stopSpeed;
+		            if(dx > 0) {
+		               dx = 0;
+		            }
+		         }
+		      }
+
+		   	
+		   	// jumping
+		      if(jumping && !falling) {
+		         dy = jumpSpeed;
+		         falling = true;	
+		      }
+		   	
+		   	// falling
+		      if(falling) {
+		    	  dy += fallSpeed;
+		         if(dy > 0) jumping = false;
+		         if(dy < 0 && !jumping) dy += stopJumpSpeed;   	
+		         if(dy > MAXFALLSPEED) dy = MAXFALLSPEED;
+		      	
+		      }
+		   	
+		   }
+
 	
 	  public void update() {
 		   	
 		   	// update position
-		      getNextPosition();
-		      checkTileMapCollision();
-		      setPosition(xtemp, ytemp);
+		  getNextPosition();
+		  int [] xy = getPosition();
+		  checkTileMapCollision();
+		  xy [0] += dx;
+		  xy [1] += dy;
+		  setPosition(xy);
 		   	
 		   	// set animation
 
@@ -125,56 +194,58 @@ public class Character implements GameObject {
 		     {
 		     if(currentState != FALLING) {
 		            currentState = FALLING;
-		            animation.setFrames(this.getVisual(currentState));
+		            animation.setFrames(this.getVisualSet(currentState));
 		            animation.setDelay(100);
-		            width = 30;
 		         }
 		      }
 		      else if(dy < 0) {
 		         if(currentState != JUMPING) {
 		            currentState = JUMPING;
-		            animation.setFrames(this.getVisual(currentState));
+		            animation.setFrames(this.getVisualSet(currentState));
 		            animation.setDelay(-1);
-		            width = 30;
 		         }
 		      }
-		      else if(left || right) {
+		      else if(dx != 0) {
 		         if(currentState != WALKING) {
-		            currentstate = WALKING;
-		            animation.setFrames(this.getVisual(currentState));
+		            currentState = WALKING;
+		            animation.setFrames(this.getVisualSet(currentState));
 		            animation.setDelay(40);
-		            width = 30;
 		         }
 		      }
 		      else {
 		         if(currentState != IDLE) {
 		            currentState = IDLE;
-		            animation.setFrames(this.getVisual(currentState));
+		            animation.setFrames(this.getVisualSet(currentState));
 		            animation.setDelay(400);
-		            width = 30;
 		         }
 		      }
 		   	
 		      animation.update();
 		   	
 		   	// set direction
-		      if(right) facingRight = true;
-		      if(left) facingRight = false;
+		      if(dx > 0) facingRight = true;
+		      if(dx < 0) facingRight = false;
 		   	
 		   }
 
-	public void draw (BufferedImage visual, int currentState)
+	private void checkTileMapCollision() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void draw (BufferedImage visual)
 	{
 		int x = position [0];
 		int y = position [1];
 		int width = size [0];
 		int height = size [1];
 		
-	      if(facingRight) {
-	          g.drawImage(getPlayingImage(), (int)(x /*+ xmin*/ - width / 2), (int)(y /*+ ymin*/ - height / 2), null);
+		if(facingRight) {
+	          g.drawImage(animation.getImage(), (int)(x /*+ x minimum*/ - width / 2), (int)(y /*+ y minimum*/ - height / 2), null);
 	       }
 	       else {
-	          g.drawImage(getPlayingImage(), (int)(x /*+ xmin*/ - width / 2 + width), (int)(y /*+ ymin*/ - height / 2), -width, height, null);
+	          g.drawImage(animation.getImage(), (int)(x /*+ x minimum*/ - width / 2 + width), (int)(y /*+ y minimum*/ - height / 2), -width, height, null);
 	       }
 		
 	}
