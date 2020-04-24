@@ -97,7 +97,7 @@ import TileMap.Background;
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-	        		g.drawImage(volHorn, null, 185, 140 + 1 * 15);
+	        		g.drawImage(volHorn, null, 185, 140 + i * 15);
 	        		break;
 	        	case 2:
 	        		
