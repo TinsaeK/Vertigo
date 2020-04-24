@@ -136,7 +136,7 @@ import TileMap.Background;
 	        	IncrementControlSetup();
 	        }
 	        if (cc==3){
-	        	new MenuState(stateMan);
+	        	stateMan.setState(GameStateManager.MENUSTATE);
 	        }
 	        if(cc==4){
 	            System.exit(0);
